@@ -1,4 +1,9 @@
-def train():
+import hydra
+from omegaconf import DictConfig
+
+
+@hydra.main(config_path="../config", config_name="rfc.yaml", version_base="1.3")
+def train(cfg: DictConfig):
     from pickle import dump, load
 
     from sklearn.ensemble import RandomForestClassifier
@@ -12,7 +17,9 @@ def train():
 
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    rfc = RandomForestClassifier(n_estimators=25)
+    rfc = RandomForestClassifier(
+        n_estimators=cfg.rfc.n_estimators, max_depth=cfg.rfc.max_depth
+    )
     rfc.fit(X_train, y_train)
 
     with open("./model/rfc.pkl", "wb") as file:
