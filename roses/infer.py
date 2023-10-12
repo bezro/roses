@@ -1,7 +1,6 @@
-if __name__ == "__main__":
+def infer():
     from pickle import load
 
-    from sklearn.datasets import load_breast_cancer
     from sklearn.metrics import (
         accuracy_score,
         precision_score,
@@ -9,14 +8,17 @@ if __name__ == "__main__":
         roc_auc_score,
     )
 
-    X, y = load_breast_cancer(return_X_y=True)
+    with open("./data/X.pkl", "rb") as file_X:
+        X = load(file_X)
+    with open("./data/y.pkl", "rb") as file_y:
+        y = load(file_y)
 
-    with open("./rfc.pkl", "rb") as file:
+    with open("./model/rfc.pkl", "rb") as file:
         rfc = load(file)
 
     y_pred = rfc.predict(X)
 
-    with open("./results.csv", "w") as file:
+    with open("./data/results.csv", "w") as file:
         file.write("x,y_true,y_pred\n")
         for x, y_, y_pred_ in zip(X, y, y_pred, strict=False):
             file.write("{},{},{}\n".format(x, y_, y_pred_))
@@ -25,3 +27,7 @@ if __name__ == "__main__":
     print("precision:", precision_score(y, y_pred))
     print("recall:", recall_score(y, y_pred))
     print("roc-auc", roc_auc_score(y, y_pred))
+
+
+if __name__ == "__main__":
+    infer()
