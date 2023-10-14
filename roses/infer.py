@@ -1,6 +1,7 @@
 def infer():
     from pickle import load
 
+    from sklearn.datasets import load_breast_cancer
     from sklearn.metrics import (
         accuracy_score,
         precision_score,
@@ -8,10 +9,7 @@ def infer():
         roc_auc_score,
     )
 
-    with open("./data/X.pkl", "rb") as file_X:
-        X = load(file_X)
-    with open("./data/y.pkl", "rb") as file_y:
-        y = load(file_y)
+    X, y = load_breast_cancer(return_X_y=True)
 
     with open("./model/rfc.pkl", "rb") as file:
         rfc = load(file)
