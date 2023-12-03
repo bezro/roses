@@ -1,3 +1,30 @@
-rfc:
-  n_estimators: 25
-  max_depth: 6
+net:
+  small:
+    name: "small"
+    hidden_layer1: 8
+    hidden_layer2: 8
+    hidden_layer3: 8
+  medium:
+    name: "medium"
+    hidden_layer1: 16
+    hidden_layer2: 24
+    hidden_layer3: 16
+  large:
+    name: "large"
+    hidden_layer1: 24
+    hidden_layer2: 32
+    hidden_layer3: 24
+  xlarge:
+    name: "xlarge"
+    hidden_layer1: 32
+    hidden_layer2: 40
+    hidden_layer3: 32
+
+batch_size: 16
+lr: 3e-4
+n_epochs: 200
+test_size: 0.25
+
+mlflow:
+  experiment: "compare_neural_networks"
+  server: "http://localhost:5000"

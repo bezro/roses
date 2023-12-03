@@ -1,31 +1,44 @@
-def infer():
-    from pickle import load
+from pickle import load
 
-    from sklearn.datasets import load_breast_cancer
-    from sklearn.metrics import (
-        accuracy_score,
-        precision_score,
-        recall_score,
-        roc_auc_score,
-    )
+import fire
+import onnxruntime
+from roses_dataset import RosesDataset, load_roses_dataset
+from torch.utils.data import DataLoader
 
-    X, y = load_breast_cancer(return_X_y=True)
 
-    with open("./model/rfc.pkl", "rb") as file:
-        rfc = load(file)
+def infer(format, model):
+    assert format in ["pkl", "onnx"]
+    assert model in ["small", "medium", "large", "xlarge"]
+    X, y = load_roses_dataset("myremote")
 
-    y_pred = rfc.predict(X)
+    model_filename = f"./model/net_{model}.{format}"
 
-    with open("./data/results.csv", "w") as file:
-        file.write("x,y_true,y_pred\n")
-        for x, y_, y_pred_ in zip(X, y, y_pred, strict=False):
-            file.write("{},{},{}\n".format(x, y_, y_pred_))
+    dataset = RosesDataset(X, y, slice(None))
 
-    print("accuracy:", accuracy_score(y, y_pred))
-    print("precision:", precision_score(y, y_pred))
-    print("recall:", recall_score(y, y_pred))
-    print("roc-auc", roc_auc_score(y, y_pred))
+    if format == "pkl":
+        dataloader = DataLoader(dataset, batch_size=1)
+
+        with open(model_filename, "rb") as file:
+            net = load(file)
+
+        with open(f"./data/results_{model}.csv", "w") as file:
+            file.write("x,y\n")
+            for x, y in dataloader:
+                a = net(x).item()
+                file.write("{},{},{}\n".format(x, y, a))
+    else:
+        onnx_session = onnxruntime.InferenceSession(
+            model_filename, providers=["CPUExecutionProvider"]
+        )
+
+        input_name = onnx_session.get_inputs()[0].name
+
+        with open(f"./data/results_{model}.csv", "w") as file:
+            file.write("x,y(true),y(pred)\n")
+            for x, y in dataset:
+                a = onnx_session.run(None, {input_name: x.reshape(1, -1)})[0]
+                file.write("{},{},{}\n".format(x, y, a))
 
 
 if __name__ == "__main__":
-    infer()
+    fire.Fire(infer)

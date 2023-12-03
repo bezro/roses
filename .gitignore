@@ -56,3 +56,4 @@ data/
 .dvc/
 /data
 /model
+/outputs
